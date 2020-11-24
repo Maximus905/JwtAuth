@@ -107,9 +107,23 @@ passport.use('ad_auth', new LocalStrategy({}, async (username, password, done) =
     // if user exists, authorise one in AD
     console.log(`User ${username} is found in local DB`)
     // const ad = new ActiveDirectory({...config})
-    const res = process.env.DISABLE_AD_AUTH
-      ? true
-      : await ad.authenticate(username, password)
+    let res = false
+    if (process.env.DISABLE_AD_AUTH) {
+      res = true
+    } else {
+      // check reader credentials
+      try {
+        let readerRes = await ad.authenticate(config.username, config.password)
+      } catch {
+        console.log('ERROR: Invalid Reader Credentials!')
+        process.exit(1)
+      }
+      //check user's credentials
+      res = await ad.authenticate(username, password)
+    }
+    // const res = process.env.DISABLE_AD_AUTH
+    //   ? true
+    //   : await ad.authenticate(username, password)
     if (!res) {
       console.log(`User ${username}: AD authentication failed`)
       return done(null, false, {message: 'Authentication failed'})
