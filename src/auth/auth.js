@@ -74,10 +74,13 @@ const config = {
 }
 
 const ad = new ActiveDirectory({...config})
-ad.authenticate(config.username, config.password).catch(reason => {
-  console.log('ERROR: Invalid Reader Credentials!')
-  process.exit(1)
-})
+if (!process.env.DISABLE_AD_AUTH) {
+  ad.authenticate(config.username, config.password).catch(reason => {
+    console.log('ERROR: Invalid Reader Credentials!')
+    process.exit(1)
+  })
+}
+
 
 async function fetchUserProfile(ad, username) {
   try {
